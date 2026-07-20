@@ -136,7 +136,18 @@ rustPlatform.buildRustPackage {
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isLinux ''
-    substituteInPlace "$cargoDepsCopy"/*/libappindicator-sys-*/src/lib.rs \
+    libappindicatorSource="$(find "$cargoDepsCopy" \
+      -type f \
+      -path '*/libappindicator-sys-*/src/lib.rs' \
+      -print \
+      -quit)"
+
+    if [[ -z "$libappindicatorSource" ]]; then
+      echo "could not locate libappindicator-sys in $cargoDepsCopy" >&2
+      exit 1
+    fi
+
+    substituteInPlace "$libappindicatorSource" \
       --replace-fail \
         "libayatana-appindicator3.so.1" \
         "${libayatana-appindicator}/lib/libayatana-appindicator3.so.1"
