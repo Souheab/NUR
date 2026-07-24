@@ -180,6 +180,10 @@ rustPlatform.buildRustPackage {
     homepage = "https://openpencil.dev";
     license = lib.licenses.mit;
     mainProgram = "OpenPencil";
+    sourceProvenance = with lib.sourceTypes; [
+      fromSource
+      binaryBytecode # Precompiled CanvasKit WebAssembly
+    ];
     maintainers = [
       {
         name = "Souheab";
