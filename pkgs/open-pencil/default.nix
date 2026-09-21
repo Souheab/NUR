@@ -46,10 +46,14 @@ let
   nodeModuleHashes = {
     aarch64-darwin = "sha256-DqaM4Bkl0y5Gq6c1DAApYaqgfFZfIxzmVJu2ZlI0MJU=";
     aarch64-linux = "sha256-8X6lixi4d9NsXEekWF4czFFvQPxKSCe2utUAdZvlVv0=";
-    x86_64-linux = "sha256-GCazJjAsCbQxs1MlVOaQiIfxVgSDTVG2eDk+OMb45bc=";
+    x86_64-linux = {
+      "1.3" = "sha256-naUtALrvDNwic52+gBBUD+5uT3RhJcYQDQL5PGPHcuU=";
+      "1.4" = "sha256-GCazJjAsCbQxs1MlVOaQiIfxVgSDTVG2eDk+OMb45bc=";
+    };
   };
 
   system = stdenv.hostPlatform.system;
+  systemNodeModuleHashes = nodeModuleHashes.${system} or null;
   nodeTarget =
     nodeTargets.${system} or {
       cpu = "unsupported";
@@ -98,7 +102,11 @@ let
       runHook postInstall
     '';
 
-    outputHash = nodeModuleHashes.${system} or lib.fakeHash;
+    outputHash =
+      if builtins.isAttrs systemNodeModuleHashes then
+        systemNodeModuleHashes.${lib.versions.majorMinor bun.version} or lib.fakeHash
+      else
+        systemNodeModuleHashes or lib.fakeHash;
     outputHashAlgo = "sha256";
     outputHashMode = "recursive";
   };
